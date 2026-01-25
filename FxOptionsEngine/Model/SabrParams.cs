@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace FxOptionsEngine
+namespace FxOptionsEngine.Model
 {
-    internal abstract class SabrParams
+    public sealed class SabrParams
     {
         public double Alpha { get; set; }
         public double Beta { get; set; }
         public double Rho { get; set; }
         public double VolOfVol { get; set; }
         
-        public SabrParams(float alpha, float beta, float rho, float volOfVol) 
+        public SabrParams(double alpha, double beta, double rho, double volOfVol) 
         {
             if (alpha <= 0.0) throw new ArgumentException("Alpha must be positive.", nameof(alpha));
             if (beta < 0.0 || beta > 1.0) throw new ArgumentException("Beta must be in [0, 1].", nameof(beta));

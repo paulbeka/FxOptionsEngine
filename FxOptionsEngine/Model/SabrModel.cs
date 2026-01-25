@@ -1,8 +1,7 @@
-﻿namespace FxOptionsEngine
+﻿namespace FxOptionsEngine.Model
 {
-    internal abstract class FxOptionsCalcs
+    public sealed class SabrModel : ISabrModel
     {
-
         /// <summary>
         /// SABR implied vol approximation using Hagan lognormal SABR
         /// </summary>
@@ -11,7 +10,7 @@
         /// <param name="timeToExpiry">Time to expiry in years (T &get; 0)</param>
         /// <param name="sabrParams">SABR model parameters</param>
         /// <returns>Implied volatility, double</returns>
-        public double SabrBlackVolatility(double forward, double strike, double timeToExpiry, SabrParams sabrParams)
+        public double BlackVolatility(double forward, double strike, double timeToExpiry, SabrParams sabrParams)
         {
             double alpha = sabrParams.Alpha;
             double beta = sabrParams.Beta;
@@ -43,7 +42,7 @@
             return term1 * zOverX * term2; 
         }
 
-        private double XOfZ(double z, double rho)
+        private static double XOfZ(double z, double rho)
         { 
             double s = Math.Sqrt(Math.Max(0.0, 1.0f - 2.0f * rho * z + z * z));
             return Math.Log((s + z - rho) / (1.0f - rho));
