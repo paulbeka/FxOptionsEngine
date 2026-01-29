@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace FxOptionsEngine.Model
+﻿namespace FxOptionsEngine.Model
 {
     public interface ISabrModel
     {
