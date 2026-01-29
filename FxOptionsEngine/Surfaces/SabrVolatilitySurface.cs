@@ -14,7 +14,10 @@ namespace FxOptionsEngine.Surfaces
 
         public double GetVolatility(double strike, double timeToExpiry)
         {
-            return 0.0;
+            var parameters = GetParameters();
+            double forward = GetForward(timeToExpiry);
+
+            return model.BlackVolatility(forward, strike, timeToExpiry, parameters);
         }
 
         public void genereateSurfaceGraph()

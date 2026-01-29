@@ -1,4 +1,5 @@
-﻿using FxOptionsEngine.Model;
+﻿using FxOptionsEngine.Data;
+using FxOptionsEngine.Model;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -25,6 +26,24 @@ namespace FxOptionsEngine
                 timeToExpiry: 0.5,
                 sabrParams: sabrParams
             );
+
+            var usdCurve = new DiscountCurve(new SortedDictionary<double, double>
+            {
+                { 0.25, 0.997 },
+                { 0.5,  0.990 },
+                { 1.0,  0.980 },
+                { 2.0,  0.963 }
+            });
+
+            var eurCurve = new DiscountCurve(new SortedDictionary<double, double>
+            {
+                { 0.25, 0.992 },
+                { 0.5,  0.994 },
+                { 1.0,  0.996 },
+                { 2.0,  0.999 }
+            });
+
+            ForwardCurve forwardCurve = new(1.0, usdCurve, eurCurve);
 
             Console.WriteLine($"SABR Black vol: {vol}");
         }  
