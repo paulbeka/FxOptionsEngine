@@ -1,5 +1,6 @@
 ﻿using FxOptionsEngine.Data;
 using FxOptionsEngine.Model;
+using FxOptionsEngine.Surfaces;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,23 +11,6 @@ namespace FxOptionsEngine
     {
         public void Run()
         {
-            
-            double alpha = 0.5f;     // the initial volatility
-            double beta = 0.5f;      // Elasticity of the forwards
-            double v = 0.5f;         // the volatility of the volatility
-            double rho = 0.5f;       // correlation between beta and v
-
-            SabrParams sabrParams = new(alpha, beta, v, rho);
-
-            ISabrModel sabrModel = new SabrModel();
-
-            double vol = sabrModel.BlackVolatility(
-                forward: 1.25,
-                strike: 1.20,
-                timeToExpiry: 0.5,
-                sabrParams: sabrParams
-            );
-
             var usdCurve = new DiscountCurve(new SortedDictionary<double, double>
             {
                 { 0.25, 0.997 },
@@ -45,7 +29,9 @@ namespace FxOptionsEngine
 
             ForwardCurve forwardCurve = new(1.0, usdCurve, eurCurve);
 
-            Console.WriteLine($"SABR Black vol: {vol}");
+            IVolatilitySurface volatilitySurface = new SabrVolatilitySurface(new SabrModel(), forwardCurve);
+
+            Console.WriteLine($"Vol @ 1 strike & 2 TTE: {volatilitySurface.GetVolatility(1.0f, 2.0f)}");
         }  
     }
 }
