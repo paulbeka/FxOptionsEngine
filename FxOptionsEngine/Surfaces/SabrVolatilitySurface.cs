@@ -11,21 +11,27 @@ namespace FxOptionsEngine.Surfaces
         private readonly ForwardCurve forwardCurve;
         private readonly SabrCalibration sabrCalibration;
 
-        private readonly double FIXED_BETA = 0.5f;  // todo: compare with other fixed beta and choose lowest error
+        // todo: replace this with live market data
+        private readonly List<StrikeToMarketVolatility> marketVolPoints = new()
+        {
+            new(0.90f, 0.14f),
+            new(0.95f, 0.12f),
+            new(1.00f, 0.11f),
+            new(1.05f, 0.12f),
+            new(1.10f, 0.14f)
+        };
 
         public SabrVolatilitySurface(ISabrModel model, ForwardCurve forwardCurve)
         {
             this.model = model;
-            this.sabrCalibration = new SabrCalibration(model);
             this.forwardCurve = forwardCurve;
+
+            sabrCalibration = new SabrCalibration(model, marketVolPoints);
         }
 
-        public double GetVolatility(
-            List<StrikeToMarketVolatility> marketVolPoints, 
-            double strike, 
-            double timeToExpiry)
+        public double GetVolatility(double strike, double timeToExpiry)
         {
-            var parameters = GetParameters(marketVolPoints, strike, timeToExpiry);
+            var parameters = GetParameters(strike, timeToExpiry);
             double forward = forwardCurve.GetForwardPrice(timeToExpiry);
 
             return model.BlackVolatility(forward, strike, timeToExpiry, parameters);
@@ -36,13 +42,10 @@ namespace FxOptionsEngine.Surfaces
             return;
         }
 
-        private SabrParams GetParameters(
-            List<StrikeToMarketVolatility> marketVolPoints,
-            double strike, 
-            double timeToExpiry)
+        private SabrParams GetParameters(double strike, double timeToExpiry)
         {
-
-            return sabrCalibration.Calibrate(marketVolPoints, strike, timeToExpiry, FIXED_BETA);
+            SabrParams calibration = sabrCalibration.Calibrate(strike, timeToExpiry);
+            return calibration;
         }
     }
 }
