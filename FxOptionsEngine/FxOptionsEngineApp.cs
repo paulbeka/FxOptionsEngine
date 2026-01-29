@@ -1,5 +1,4 @@
-﻿using FxOptionsEngine.Calibration.SabrCalibration;
-using FxOptionsEngine.Data;
+﻿using FxOptionsEngine.Data;
 using FxOptionsEngine.Model;
 using FxOptionsEngine.Surfaces;
 
@@ -30,6 +29,7 @@ namespace FxOptionsEngine
             IVolatilitySurface volatilitySurface = new SabrVolatilitySurface(new SabrModel(), forwardCurve);
         
             double vol = volatilitySurface.GetVolatility(1.0f, 2.0f);
+            volatilitySurface.GenereateSurfaceGraph();
 
             Console.WriteLine($"Vol @ 1 strike & 2 TTE: {vol}");
         }  

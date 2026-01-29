@@ -1,6 +1,8 @@
 ﻿using FxOptionsEngine.Calibration.SabrCalibration;
 using FxOptionsEngine.Data;
 using FxOptionsEngine.Model;
+using ScottPlot;
+using ScottPlot.WinForms;
 
 namespace FxOptionsEngine.Surfaces
 {
@@ -37,9 +39,37 @@ namespace FxOptionsEngine.Surfaces
             return model.BlackVolatility(forward, strike, timeToExpiry, parameters);
         }
 
-        public void genereateSurfaceGraph()
+        public void GenereateSurfaceGraph()
         {
-            return;
+            int strikeSteps = 50;
+            int timeSteps = 50;
+
+            double minStrike = 0.90;
+            double maxStrike = 1.20;
+
+            double minTimeToExiry = 0.1;
+            double maxTimeToExiry = 3.0;
+
+            double[,] vols = new double[timeSteps, strikeSteps];
+
+            for (int i = 0; i < timeSteps; i++)
+            {
+                double t = minTimeToExiry + i * (maxTimeToExiry - minTimeToExiry) / (timeSteps - 1);
+
+                for (int j = 0; j < strikeSteps; j++)
+                {
+                    double strike = minStrike + j * (maxStrike - minStrike) / (strikeSteps - 1);
+                    vols[i, j] = GetVolatility(strike, t);
+                }
+            }
+            
+            var plot = new Plot();
+            plot.Add.Heatmap(vols);
+            plot.Title("SABR Implied Volatility Surface");
+            plot.XLabel("Strike");
+            plot.YLabel("Time to Expiry");
+
+            FormsPlotViewer.Launch(plot);
         }
 
         private SabrParams GetParameters(double strike, double timeToExpiry)

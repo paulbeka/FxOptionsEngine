@@ -7,5 +7,7 @@ namespace FxOptionsEngine.Surfaces
     internal interface IVolatilitySurface
     {
         double GetVolatility(double strike, double timeToExpiry);
+
+        void GenereateSurfaceGraph();
     }
 }

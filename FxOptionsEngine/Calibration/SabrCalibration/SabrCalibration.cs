@@ -38,8 +38,6 @@ namespace FxOptionsEngine.Calibration.SabrCalibration
                 UpdateRho(ref rho, stepRho, ref bestError, alpha, v, forward, timeToExpiry);
                 UpdateV(ref v, stepV, ref bestError, alpha, rho, forward, timeToExpiry);
 
-                Console.WriteLine($"alpha: {alpha}, rho={rho}, vol={v}");
-
                 stepAlpha *= 0.95;
                 stepRho *= 0.95;
                 stepV *= 0.95;
