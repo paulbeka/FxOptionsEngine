@@ -20,5 +20,18 @@
             VolOfVol = volOfVol;
         }
 
+        public override bool Equals(object? obj)
+        {
+            return obj is SabrParams @params &&
+                   Alpha == @params.Alpha &&
+                   Beta == @params.Beta &&
+                   Rho == @params.Rho &&
+                   VolOfVol == @params.VolOfVol;
+        }
+
+        public override int GetHashCode()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

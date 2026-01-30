@@ -11,7 +11,7 @@ namespace FxOptionsEngine.Surfaces
 
         private readonly ISabrModel model;
         private readonly ForwardCurve forwardCurve;
-        private readonly SabrCalibration sabrCalibration;
+        private readonly SabrVolatilityCalibration sabrCalibration;
 
         // todo: replace this with live market data
         private readonly List<StrikeToMarketVolatility> marketVolPoints = new()
@@ -28,7 +28,7 @@ namespace FxOptionsEngine.Surfaces
             this.model = model;
             this.forwardCurve = forwardCurve;
 
-            sabrCalibration = new SabrCalibration(model, marketVolPoints);
+            sabrCalibration = new SabrVolatilityCalibration(model, marketVolPoints);
         }
 
         public double GetVolatility(double strike, double timeToExpiry)

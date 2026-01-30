@@ -2,7 +2,7 @@
 
 namespace FxOptionsEngine.Calibration.SabrCalibration
 {
-    public sealed class SabrCalibration
+    public sealed class SabrVolatilityCalibration
     {
         private readonly ISabrModel model;
         private readonly List<StrikeToMarketVolatility> marketVolPoints;
@@ -10,7 +10,7 @@ namespace FxOptionsEngine.Calibration.SabrCalibration
         private readonly double FIXED_BETA = 0.5; // todo: compare with other fixed beta and choose lowest error
         private readonly int N_ITERS = 500;
 
-        public SabrCalibration(
+        public SabrVolatilityCalibration(
             ISabrModel model,
             List<StrikeToMarketVolatility> marketVolPoints)
         {
@@ -22,6 +22,16 @@ namespace FxOptionsEngine.Calibration.SabrCalibration
             double forward,
             double timeToExpiry)
         {
+            if (forward < 0)
+            {
+                throw new ArgumentOutOfRangeException("Forward should be above 0");
+            }
+
+            if (timeToExpiry < 0)
+            {
+                throw new ArgumentOutOfRangeException("Time to Expiry should be above 0");
+            }
+
             double alpha = 0.5;
             double v = 0.5;
             double rho = 0.5;
