@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".env" />
+  </Folder>
   <Project Path="FxOptionsEngine.Tests/FxOptionsEngine.Tests.csproj" Id="e5649e8b-63ca-467b-94ca-b20c8282ebe2" />
   <Project Path="FxOptionsEngine/FxOptionsEngine.csproj" />
 </Solution>
