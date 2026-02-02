@@ -15,9 +15,14 @@ The core features include:
 
 ## Design Choices
 
+### Model Choices
 To make the design extensible for other pricing calculators, an ISabrModel interface was created. This allows any other SABR-like design to be implemented and plugged in. For example Normal SABR, Shifted SABR, Andreasen–Huge SABR, etc. This allows designs to be modified and chosen as needed without breaking dependent code.
 
 A similar approach was used for the calibration model.
+
+### Live Data collection
+
+Unfortunately, collecting OIS discount curves using swaps was too costly. Therefore, the overnight OIS rate was assumed to build the discount curve for both SOFR and ESTR, instead of a bootstrapped OIS curve. This is acceptable for testing purposes but should never be used in a live system, as pricing will not be correct and therefore the no-arbitrage argument is invalidated.
 
 
 ## Tests

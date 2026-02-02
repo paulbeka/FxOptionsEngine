@@ -1,6 +1,6 @@
-﻿namespace FxOptionsEngine.Model
+﻿namespace FxOptionsEngine.Model.Sabr
 {
-    public sealed class SabrModel : ISabrModel
+    public sealed class SabrModel : IVolatilityModel<SabrParams>
     {
         /// <summary>
         /// SABR implied vol approximation using Hagan lognormal SABR

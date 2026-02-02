@@ -1,6 +1,7 @@
 ﻿using FxOptionsEngine.Data;
 using FxOptionsEngine.MarketData.Rates;
 using FxOptionsEngine.Model;
+using FxOptionsEngine.Model.Sabr;
 using FxOptionsEngine.Surfaces;
 
 namespace FxOptionsEngine

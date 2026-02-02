@@ -1,4 +1,4 @@
-﻿namespace FxOptionsEngine.Model
+﻿namespace FxOptionsEngine.Model.Sabr
 {
     public sealed class SabrParams
     {

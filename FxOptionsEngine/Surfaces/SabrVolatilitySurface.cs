@@ -1,6 +1,7 @@
 ﻿using FxOptionsEngine.Calibration.SabrCalibration;
 using FxOptionsEngine.Data;
 using FxOptionsEngine.Model;
+using FxOptionsEngine.Model.Sabr;
 using ScottPlot;
 using ScottPlot.WinForms;
 
@@ -8,27 +9,37 @@ namespace FxOptionsEngine.Surfaces
 {
     public sealed class SabrVolatilitySurface : IVolatilitySurface
     {
-
-        private readonly ISabrModel model;
+        private readonly IVolatilityModel<SabrParams> model;
         private readonly ForwardCurve forwardCurve;
         private readonly SabrVolatilityCalibration sabrCalibration;
+        private readonly Dictionary<double, List<StrikeToMarketVolatility>> marketDataByExpiry;
 
-        // todo: replace this with live market data
-        private readonly List<StrikeToMarketVolatility> marketVolPoints = new()
+        // todo: implement an LRU cache to prevent out of memory issues
+        private readonly Dictionary<double, SabrParams> sabrParamsByExpiry = new();
+
+        // todo: input this in some sort of file
+        private static readonly double[] Expiries =
         {
-            new(0.90f, 0.14f),
-            new(0.95f, 0.12f),
-            new(1.00f, 0.11f),
-            new(1.05f, 0.12f),
-            new(1.10f, 0.14f)
+            0.25,
+            0.5,
+            1.0
         };
 
-        public SabrVolatilitySurface(ISabrModel model, ForwardCurve forwardCurve)
+        public SabrVolatilitySurface(IVolatilityModel<SabrParams> model, ForwardCurve forwardCurve)
         {
             this.model = model;
             this.forwardCurve = forwardCurve;
 
-            sabrCalibration = new SabrVolatilityCalibration(model, marketVolPoints);
+            marketDataByExpiry = new Dictionary<double, List<StrikeToMarketVolatility>>();
+
+            foreach (double timeToExpiry in Expiries)
+            {
+                double forward = forwardCurve.GetForwardPrice(timeToExpiry);
+                var vols = OptionsProvider.Scrape(forward, timeToExpiry);
+                marketDataByExpiry[timeToExpiry] = vols;
+            }
+
+            sabrCalibration = new SabrVolatilityCalibration(model);
         }
 
         public double GetVolatility(double strike, double timeToExpiry)
@@ -72,9 +83,13 @@ namespace FxOptionsEngine.Surfaces
             FormsPlotViewer.Launch(plot);
         }
 
-        private SabrParams GetParameters(double strike, double timeToExpiry)
+        private SabrParams GetParameters(double forward, double timeToExpiry)
         {
-            SabrParams calibration = sabrCalibration.Calibrate(strike, timeToExpiry);
+            if (!sabrParamsByExpiry.TryGetValue(timeToExpiry, out var calibration))
+            {
+                calibration = sabrCalibration.Calibrate(forward, timeToExpiry, marketDataByExpiry[timeToExpiry]);
+                sabrParamsByExpiry[timeToExpiry] = calibration;
+            }
             return calibration;
         }
     }

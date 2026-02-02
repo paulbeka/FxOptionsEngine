@@ -1,5 +1,5 @@
 ﻿using FxOptionsEngine.Calibration.SabrCalibration;
-using FxOptionsEngine.Model;
+using FxOptionsEngine.Model.Sabr;
 
 namespace FxOptionsEngine.Tests.Calibration.SabrCalibration
 {

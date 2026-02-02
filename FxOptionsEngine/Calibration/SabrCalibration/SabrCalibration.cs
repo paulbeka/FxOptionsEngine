@@ -1,26 +1,24 @@
 ﻿using FxOptionsEngine.Model;
+using FxOptionsEngine.Model.Sabr;
 
 namespace FxOptionsEngine.Calibration.SabrCalibration
 {
     public sealed class SabrVolatilityCalibration
     {
-        private readonly ISabrModel model;
-        private readonly List<StrikeToMarketVolatility> marketVolPoints;
+        private readonly IVolatilityModel<SabrParams> model;
 
         private readonly double FIXED_BETA = 0.5; // todo: compare with other fixed beta and choose lowest error
         private readonly int N_ITERS = 500;
 
-        public SabrVolatilityCalibration(
-            ISabrModel model,
-            List<StrikeToMarketVolatility> marketVolPoints)
+        public SabrVolatilityCalibration(IVolatilityModel<SabrParams> model)
         {
             this.model = model;
-            this.marketVolPoints = marketVolPoints;
         }
 
         public SabrParams Calibrate(
             double forward,
-            double timeToExpiry)
+            double timeToExpiry,
+            List<StrikeToMarketVolatility> marketVolPoints)
         {
             if (forward < 0)
             {
@@ -40,13 +38,13 @@ namespace FxOptionsEngine.Calibration.SabrCalibration
             double stepV = 0.05;
             double stepRho = 0.05;
 
-            double bestError = Error(alpha, rho, v, forward, timeToExpiry);
+            double bestError = Error(alpha, rho, v, forward, timeToExpiry, marketVolPoints);
 
             for (int iter = 0; iter < N_ITERS; iter++)
             {
-                UpdateAlpha(ref alpha, stepAlpha, ref bestError, rho, v, forward, timeToExpiry);
-                UpdateRho(ref rho, stepRho, ref bestError, alpha, v, forward, timeToExpiry);
-                UpdateV(ref v, stepV, ref bestError, alpha, rho, forward, timeToExpiry);
+                UpdateAlpha(ref alpha, stepAlpha, ref bestError, rho, v, forward, timeToExpiry, marketVolPoints);
+                UpdateRho(ref rho, stepRho, ref bestError, alpha, v, forward, timeToExpiry, marketVolPoints);
+                UpdateV(ref v, stepV, ref bestError, alpha, rho, forward, timeToExpiry, marketVolPoints);
 
                 stepAlpha *= 0.95;
                 stepRho *= 0.95;
@@ -63,13 +61,14 @@ namespace FxOptionsEngine.Calibration.SabrCalibration
             double rho,
             double v,
             double forward,
-            double timeToExpiry)
+            double timeToExpiry,
+            List<StrikeToMarketVolatility> marketVolPoints)
         {
             double up = alpha + step;
             double down = Math.Max(1e-6, alpha - step);
 
-            double errUp = Error(up, rho, v, forward, timeToExpiry);
-            double errDown = Error(down, rho, v, forward, timeToExpiry);
+            double errUp = Error(up, rho, v, forward, timeToExpiry, marketVolPoints);
+            double errDown = Error(down, rho, v, forward, timeToExpiry, marketVolPoints);
 
             if (errUp < best)
             {
@@ -90,13 +89,14 @@ namespace FxOptionsEngine.Calibration.SabrCalibration
             double alpha,
             double v,
             double forward,
-            double timeToExpiry)
+            double timeToExpiry,
+            List<StrikeToMarketVolatility> marketVolPoints)
         {
             double up = Math.Min(0.999, rho + step);
             double down = Math.Max(-0.999, rho - step);
 
-            double errUp = Error(alpha, up, v, forward, timeToExpiry);
-            double errDown = Error(alpha, down, v, forward, timeToExpiry);
+            double errUp = Error(alpha, up, v, forward, timeToExpiry, marketVolPoints);
+            double errDown = Error(alpha, down, v, forward, timeToExpiry, marketVolPoints);
 
             if (errUp < best)
             {
@@ -117,13 +117,14 @@ namespace FxOptionsEngine.Calibration.SabrCalibration
             double alpha,
             double rho,
             double forward,
-            double timeToExpiry)
+            double timeToExpiry,
+            List<StrikeToMarketVolatility> marketVolPoints)
         {
             double up = v + step;
             double down = Math.Max(1e-6, v - step);
 
-            double errUp = Error(alpha, rho, up, forward, timeToExpiry);
-            double errDown = Error(alpha, rho, down, forward, timeToExpiry);
+            double errUp = Error(alpha, rho, up, forward, timeToExpiry, marketVolPoints);
+            double errDown = Error(alpha, rho, down, forward, timeToExpiry, marketVolPoints);
 
             if (errUp < best)
             {
@@ -142,7 +143,8 @@ namespace FxOptionsEngine.Calibration.SabrCalibration
             double r,
             double v,
             double forward,
-            double timeToExpiry)
+            double timeToExpiry,
+            List<StrikeToMarketVolatility> marketVolPoints)
         {
             if (a <= 0 || v <= 0 || r <= -0.999 || r >= 0.999)
                 return double.MaxValue;
