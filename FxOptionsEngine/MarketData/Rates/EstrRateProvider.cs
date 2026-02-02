@@ -1,11 +1,9 @@
 ﻿
-using FxOptionsEngine.MarketData.Models;
 using System.Text.Json;
-using static System.Net.WebRequestMethods;
 
 namespace FxOptionsEngine.MarketData.Rates
 {
-    public class EstrRateProvider : IRateProvider
+    public class EstrRateProvider : RateProvider
     {
         private readonly HttpClient http;
         private readonly string BASE_URL = "https://api.estr.dev/historical";
@@ -14,7 +12,8 @@ namespace FxOptionsEngine.MarketData.Rates
         {
             this.http = http;
         }
-        public async Task<List<RatePoint>> GetRates()
+
+        public override async Task<double> GetRate()
         {
             var json = await http.GetStringAsync(BASE_URL);
             using var doc = JsonDocument.Parse(json);
@@ -22,11 +21,8 @@ namespace FxOptionsEngine.MarketData.Rates
             return JsonDocument.Parse(json)
                 .RootElement
                 .EnumerateArray()
-                .Select(e => new RatePoint(
-                    e.GetProperty("date").GetDateTime(),
-                    e.GetProperty("value").GetDouble() / 100.0
-                ))
-                .ToList();
+                .Select(e => e.GetProperty("value").GetDouble() / 100.0)
+                .First();
         }
     }
 }
