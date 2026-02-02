@@ -1,9 +1,9 @@
-﻿using FxOptionsEngine.Market.Quotes;
+﻿using FxOptionsEngine.MarketData.Models;
 using System.Text.Json;
 
 namespace FxOptionsEngine.MarketData.Rates
 {
-    public class SofrRateProvider
+    public class SofrRateProvider : IRateProvider
     {
         private readonly HttpClient http;
         private readonly string BASE_URL = "https://api.stlouisfed.org/fred/series/observations";
@@ -16,7 +16,7 @@ namespace FxOptionsEngine.MarketData.Rates
                 ?? throw new InvalidOperationException("FRED_API_KEY environment variable is not set.");
         }
 
-        public async Task<List<SofrRatePoint>> GetRates()
+        public async Task<List<RatePoint>> GetRates()
         {
             var url =
                 $"{BASE_URL}" +
@@ -31,7 +31,7 @@ namespace FxOptionsEngine.MarketData.Rates
                 .GetProperty("observations")
                 .EnumerateArray()
                 .Where(o => o.GetProperty("value").GetString() != ".")
-                .Select(o => new SofrRatePoint(
+                .Select(o => new RatePoint(
                     DateTime.Parse(o.GetProperty("date").GetString()!),
                     double.Parse(o.GetProperty("value").GetString()!) / 100.0
                 ))

@@ -29,14 +29,15 @@ namespace FxOptionsEngine
 
             IVolatilitySurface volatilitySurface = new SabrVolatilitySurface(new SabrModel(), forwardCurve);
 
-            //double vol = volatilitySurface.GetVolatility(1.0f, 2.0f);
+            var http = new HttpClient();
+            IRateProvider sofrRates = new SofrRateProvider(http);
+            IRateProvider estrRates = new EstrRateProvider(http);
+
+            sofrRates.GetRates().GetAwaiter().GetResult();
+            estrRates.GetRates().GetAwaiter().GetResult();
+
             //volatilitySurface.GenereateSurfaceGraph();
 
-            //Console.WriteLine($"Vol @ 1 strike & 2 TTE: {vol}");
-
-            var http = new HttpClient();
-            SofrRateProvider sofrRates = new SofrRateProvider(http);
-            sofrRates.GetRates().GetAwaiter().GetResult();
         }
     }
 }
