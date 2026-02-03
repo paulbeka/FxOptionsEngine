@@ -16,7 +16,7 @@ namespace FxOptionsEngine.Tests.Calibration.SabrCalibration
                 new(1.05f, 0.12f),
                 new(1.10f, 0.14f)
             ];
-            SabrVolatilityCalibration calibrator = new(new SabrModel(), marketVolPoints);
+            SabrVolatilityCalibration calibrator = new(new SabrModel());
 
             double strike = 1.0f;
             double timeToExpiry = 2.0f;
@@ -26,7 +26,7 @@ namespace FxOptionsEngine.Tests.Calibration.SabrCalibration
                 0.5f,
                 0.821062524511184,
                 0.064616403159745942);
-            SabrParams parameters = calibrator.Calibrate(strike, timeToExpiry);
+            SabrParams parameters = calibrator.Calibrate(strike, timeToExpiry, marketVolPoints);
 
             Assert.Equal(expectedParameters, parameters);
         }
@@ -42,7 +42,7 @@ namespace FxOptionsEngine.Tests.Calibration.SabrCalibration
                 new(1.3f, 0.28f),
                 new(1.9f, 1.98f)
             ];
-            SabrVolatilityCalibration calibrator = new(new SabrModel(), marketVolPoints);
+            SabrVolatilityCalibration calibrator = new(new SabrModel());
 
             double strike = 1.0f;
             double timeToExpiry = 2.0f;
@@ -52,7 +52,7 @@ namespace FxOptionsEngine.Tests.Calibration.SabrCalibration
                 0.5f,
                 0.58281175897107707,
                 1.4999999999927236);
-            SabrParams parameters = calibrator.Calibrate(strike, timeToExpiry);
+            SabrParams parameters = calibrator.Calibrate(strike, timeToExpiry, marketVolPoints);
 
             Assert.Equal(expectedParameters, parameters);
         }
@@ -68,12 +68,12 @@ namespace FxOptionsEngine.Tests.Calibration.SabrCalibration
                 new(1.3f, 0.28f),
                 new(1.9f, 1.98f)
             ];
-            SabrVolatilityCalibration calibrator = new(new SabrModel(), marketVolPoints);
+            SabrVolatilityCalibration calibrator = new(new SabrModel());
 
             double strike = -1.0f;
             double timeToExpiry = 2.0f;
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => calibrator.Calibrate(strike, timeToExpiry));
+            Assert.Throws<ArgumentOutOfRangeException>(() => calibrator.Calibrate(strike, timeToExpiry, marketVolPoints));
         }
 
         [Fact]
@@ -87,12 +87,12 @@ namespace FxOptionsEngine.Tests.Calibration.SabrCalibration
                 new(1.3f, 0.28f),
                 new(1.9f, 1.98f)
             ];
-            SabrVolatilityCalibration calibrator = new(new SabrModel(), marketVolPoints);
+            SabrVolatilityCalibration calibrator = new(new SabrModel());
 
             double strike = 1.0f;
             double timeToExpiry = -2.0f;
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => calibrator.Calibrate(strike, timeToExpiry));
+            Assert.Throws<ArgumentOutOfRangeException>(() => calibrator.Calibrate(strike, timeToExpiry, marketVolPoints));
         }
     }
 }

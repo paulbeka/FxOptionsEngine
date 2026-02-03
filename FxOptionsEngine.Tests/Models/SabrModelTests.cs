@@ -1,5 +1,4 @@
-﻿using FxOptionsEngine.Model;
-using Xunit;
+﻿using FxOptionsEngine.Model.Sabr;
 
 namespace FxOptionsEngine.Tests.Models
 {
