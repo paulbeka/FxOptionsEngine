@@ -12,7 +12,6 @@ namespace FxOptionsEngine.Surfaces
         private readonly IVolatilityModel<SabrParams> model;
         private readonly ForwardCurve forwardCurve;
         private readonly SabrVolatilityCalibration sabrCalibration;
-        private readonly Dictionary<double, List<StrikeToMarketVolatility>> marketDataByExpiry;
 
         // todo: implement an LRU cache to prevent out of memory issues
         private readonly Dictionary<double, SabrParams> sabrParamsByExpiry = new();
@@ -29,23 +28,20 @@ namespace FxOptionsEngine.Surfaces
         {
             this.model = model;
             this.forwardCurve = forwardCurve;
-
-            marketDataByExpiry = new Dictionary<double, List<StrikeToMarketVolatility>>();
+            sabrCalibration = new SabrVolatilityCalibration(model);
 
             foreach (double timeToExpiry in Expiries)
             {
                 double forward = forwardCurve.GetForwardPrice(timeToExpiry);
                 var vols = OptionsProvider.FetchData(forward, timeToExpiry);
-                marketDataByExpiry[timeToExpiry] = vols;
+                sabrParamsByExpiry[timeToExpiry] = sabrCalibration.Calibrate(forward, timeToExpiry, vols);
             }
-
-            sabrCalibration = new SabrVolatilityCalibration(model);
         }
 
         public double GetVolatility(double strike, double timeToExpiry)
         {
-            var parameters = GetParameters(strike, timeToExpiry);
             double forward = forwardCurve.GetForwardPrice(timeToExpiry);
+            var parameters = GetParameters(timeToExpiry);
 
             return model.BlackVolatility(forward, strike, timeToExpiry, parameters);
         }
@@ -83,14 +79,46 @@ namespace FxOptionsEngine.Surfaces
             FormsPlotViewer.Launch(plot);
         }
 
-        private SabrParams GetParameters(double forward, double timeToExpiry)
+        public SabrParams GetParameters(double timeToExpiry)
         {
-            if (!sabrParamsByExpiry.TryGetValue(timeToExpiry, out var calibration))
+            var (leftParameter, rightParameter) = FindParameterBracket(timeToExpiry);
+
+            var p1 = sabrParamsByExpiry[leftParameter];
+            var p2 = sabrParamsByExpiry[rightParameter];
+
+            double alpha = Math.Exp(LinearlyInterpolate(timeToExpiry, leftParameter, rightParameter, p1.Alpha, p2.Alpha));
+            double rho = LinearlyInterpolate(timeToExpiry, leftParameter, rightParameter, p1.Rho, p2.Rho);
+            double v = LinearlyInterpolate(timeToExpiry, leftParameter, rightParameter, p1.VolOfVol, p2.VolOfVol);
+
+            return new SabrParams(alpha, p1.Beta, rho, v);
+        }
+
+        private (double, double) FindParameterBracket(double timeToExpiry)
+        {
+            var expiries = sabrParamsByExpiry.Keys.OrderBy(e => e).ToArray();
+
+            if (timeToExpiry <= expiries[0])
+                return (expiries[0], expiries[0]);
+
+            if (timeToExpiry >= expiries[^1])
+                return (expiries[^1], expiries[^1]);
+
+            for (int i = 0; i < expiries.Length - 1; i++)
             {
-                calibration = sabrCalibration.Calibrate(forward, timeToExpiry, marketDataByExpiry[timeToExpiry]);
-                sabrParamsByExpiry[timeToExpiry] = calibration;
+                if (timeToExpiry >= expiries[i] && timeToExpiry <= expiries[i + 1])
+                    return (expiries[i], expiries[i + 1]);
             }
-            return calibration;
+
+            throw new InvalidOperationException("Failed to bracket expiry");
+        }
+
+        private static double LinearlyInterpolate(double x, double x1, double x2, double y1, double y2)
+        {
+            if (x1 == x2)
+                return y1;
+
+            double w = (x - x1) / (x2 - x1);
+            return y1 + w * (y2 - y1);
         }
     }
 }
