@@ -48,32 +48,38 @@ namespace FxOptionsEngine.Surfaces
 
         public void GenereateSurfaceGraph()
         {
-            int strikeSteps = 50;
-            int timeSteps = 50;
-
-            double minStrike = 0.90;
-            double maxStrike = 1.20;
+            int strikeSteps = 500;
+            int timeSteps = 500;
 
             double minTimeToExiry = 0.1;
-            double maxTimeToExiry = 3.0;
+            double maxTimeToExiry = 1.0;
+
+            double xMin = -0.15;
+            double xMax = +0.15;
 
             double[,] vols = new double[timeSteps, strikeSteps];
 
             for (int i = 0; i < timeSteps; i++)
             {
                 double t = minTimeToExiry + i * (maxTimeToExiry - minTimeToExiry) / (timeSteps - 1);
+                double f = forwardCurve.GetForwardPrice(t);
 
                 for (int j = 0; j < strikeSteps; j++)
                 {
-                    double strike = minStrike + j * (maxStrike - minStrike) / (strikeSteps - 1);
+                    double x = xMin + j * (xMax - xMin) / (strikeSteps - 1);
+                    double strike = f * Math.Exp(x);
+
                     vols[i, j] = GetVolatility(strike, t);
                 }
             }
-            
+
             var plot = new Plot();
-            plot.Add.Heatmap(vols);
+            var hm = plot.Add.Heatmap(vols);
+
+            hm.Extent = new ScottPlot.CoordinateRect(xMin, minTimeToExiry, xMax, maxTimeToExiry);
+
             plot.Title("SABR Implied Volatility Surface");
-            plot.XLabel("Strike");
+            plot.XLabel("log-moneyness");
             plot.YLabel("Time to Expiry");
 
             FormsPlotViewer.Launch(plot);
@@ -86,7 +92,8 @@ namespace FxOptionsEngine.Surfaces
             var p1 = sabrParamsByExpiry[leftParameter];
             var p2 = sabrParamsByExpiry[rightParameter];
 
-            double alpha = Math.Exp(LinearlyInterpolate(timeToExpiry, leftParameter, rightParameter, p1.Alpha, p2.Alpha));
+            double alpha = Math.Exp(LinearlyInterpolate(timeToExpiry, leftParameter, rightParameter, 
+                Math.Log(p1.Alpha), Math.Log(p2.Alpha)));
             double rho = LinearlyInterpolate(timeToExpiry, leftParameter, rightParameter, p1.Rho, p2.Rho);
             double v = LinearlyInterpolate(timeToExpiry, leftParameter, rightParameter, p1.VolOfVol, p2.VolOfVol);
 

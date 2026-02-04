@@ -8,7 +8,7 @@ namespace FxOptionsEngine.Calibration.SabrCalibration
         private readonly IVolatilityModel<SabrParams> model;
 
         private readonly double FIXED_BETA = 0.5; // todo: compare with other fixed beta and choose lowest error
-        private readonly int N_ITERS = 500;
+        private readonly int N_ITERS = 100;
 
         public SabrVolatilityCalibration(IVolatilityModel<SabrParams> model)
         {
@@ -30,13 +30,13 @@ namespace FxOptionsEngine.Calibration.SabrCalibration
                 throw new ArgumentOutOfRangeException("Time to Expiry should be above 0");
             }
 
-            double alpha = 0.5;
+            double alpha = 0.08;
             double v = 0.5;
             double rho = 0.5;
 
-            double stepAlpha = 0.05;
-            double stepV = 0.05;
-            double stepRho = 0.05;
+            double stepAlpha = 0.01;
+            double stepV = 0.1;
+            double stepRho = 0.005;
 
             double bestError = Error(alpha, rho, v, forward, timeToExpiry, marketVolPoints);
 
@@ -121,7 +121,8 @@ namespace FxOptionsEngine.Calibration.SabrCalibration
             List<StrikeToMarketVolatility> marketVolPoints)
         {
             double up = v + step;
-            double down = Math.Max(1e-6, v - step);
+            var vFloor = 0.05;
+            double down = Math.Max(vFloor, v - step);
 
             double errUp = Error(alpha, rho, up, forward, timeToExpiry, marketVolPoints);
             double errDown = Error(alpha, rho, down, forward, timeToExpiry, marketVolPoints);
