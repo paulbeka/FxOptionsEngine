@@ -35,7 +35,7 @@ namespace FxOptionsEngine.Surfaces
             foreach (double timeToExpiry in Expiries)
             {
                 double forward = forwardCurve.GetForwardPrice(timeToExpiry);
-                var vols = OptionsProvider.Scrape(forward, timeToExpiry);
+                var vols = OptionsProvider.FetchData(forward, timeToExpiry);
                 marketDataByExpiry[timeToExpiry] = vols;
             }
 
