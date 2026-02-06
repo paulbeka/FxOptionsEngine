@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace FxOptionsEngine.Surfaces
+﻿namespace FxOptionsEngine.Surfaces
 {
-    internal interface IVolatilitySurface
+    public interface IVolatilitySurface
     {
         double GetVolatility(double strike, double timeToExpiry);
 
